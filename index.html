@@ -1,335 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AgriVision - AI Crop Disease Detection</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600&display=swap');
-
-    /* Base styles */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      background-color: #121212;
-      color: #d0e8d0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    a {
-      color: #32cd32;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    h1, h2, h3 {
-      font-weight: 600;
-      color: #66bb6a;
-      margin-bottom: 0.5rem;
-    }
-    h1 {
-      font-size: 2.5rem;
-      letter-spacing: 0.1em;
-      color: #4caf50;
-    }
-    h2 {
-      font-size: 1.8rem;
-    }
-    .container {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      width: 90%;
-    }
-    button {
-      background-color: #4caf50;
-      border: none;
-      padding: 1rem 2.5rem;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #121212;
-      border-radius: 1rem;
-      cursor: pointer;
-      box-shadow: 0 4px 10px #388e3c;
-      transition: background-color 0.25s ease;
-    }
-    button:disabled {
-      background-color: #2f4f2f;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-    button:hover:not(:disabled) {
-      background-color: #388e3c;
-      box-shadow: 0 6px 14px #2e7d32;
-    }
-    input[type="file"] {
-      display: none;
-    }
-    label.upload-btn {
-      display: inline-block;
-      padding: 1rem 2.5rem;
-      font-weight: 700;
-      font-size: 1.25rem;
-      border-radius: 1rem;
-      background-color: #66bb6a;
-      color: #121212;
-      cursor: pointer;
-      box-shadow: 0 4px 10px #388e3c;
-      user-select: none;
-      transition: background-color 0.25s ease;
-    }
-    label.upload-btn:hover {
-      background-color: #81c784;
-      box-shadow: 0 6px 14px #2e7d32;
-    }
-    .page {
-      display: none;
-      flex-direction: column;
-      gap: 2rem;
-    }
-    .page.active {
-      display: flex;
-    }
-    .header {
-      text-align: center;
-      padding: 2rem 1rem 1rem;
-      border-bottom: 2px solid #4caf50;
-    }
-
-    /* Navigation */
-    nav {
-      display: flex;
-      gap: 2rem;
-      justify-content: center;
-      margin: 1rem 0 3rem;
-      border-bottom: 1px solid #2a2a2a;
-      padding-bottom: 1rem;
-    }
-    nav button {
-      all: unset;
-      cursor: pointer;
-      padding: 0.5rem 1.25rem;
-      font-size: 1.125rem;
-      font-weight: 700;
-      border-radius: 1rem;
-      color: #8ecf8e;
-      text-align: center;
-      box-shadow: inset 0 -2px 0 0 transparent;
-      transition: color 0.3s ease, box-shadow 0.3s ease;
-    }
-    nav button.active,
-    nav button:hover {
-      color: #121212;
-      background-color: #81c784;
-      box-shadow: inset 0 -4px 0 0 #4caf50;
-    }
-
-    /* Upload page styles */
-    #uploadPage {
-      align-items: center;
-      justify-content: center;
-      min-height: 60vh;
-      text-align: center;
-    }
-    .upload-icon {
-      width: 96px;
-      height: 96px;
-      fill: #66bb6a;
-      margin-bottom: 1rem;
-    }
-    .instructions {
-      font-size: 1.125rem;
-      margin-bottom: 2rem;
-      color: #a5d6a7;
-    }
-
-    /* Results page */
-    #resultsPage .result-card {
-      background-color: #1b311b;
-      border-radius: 1rem;
-      padding: 2rem;
-      box-shadow: 0 6px 12px #2e7d32aa;
-      color: #c9e3c9;
-    }
-    .result-card h2 {
-      font-size: 1.75rem;
-      color: #a5d6a7;
-      margin-bottom: 1rem;
-    }
-    .result-confidence {
-      font-weight: 600;
-      font-size: 1.25rem;
-      margin-bottom: 1rem;
-      color: #4caf50;
-    }
-    .treatment {
-      background-color: #274327;
-      border-radius: 1rem;
-      padding: 1rem;
-      font-size: 1.125rem;
-      white-space: pre-line;
-      line-height: 1.5;
-      color: #bbd9bb;
-      margin-top: 1.5rem;
-    }
-    .annotated-image {
-      max-width: 100%;
-      border-radius: 1rem;
-      box-shadow: 0 6px 12px #2e7d32cc;
-      margin-top: 2rem;
-    }
-
-    /* Digital Twin page */
-    #twinPage {
-      align-items: center;
-      justify-content: center;
-      min-height: 60vh;
-    }
-    #twinCanvas {
-      width: 100%;
-      max-width: 600px;
-      height: 400px;
-      border-radius: 1rem;
-      background: linear-gradient(135deg, #1b3a1b, #104010);
-      box-shadow: 0 8px 20px #2e7d32cc;
-    }
-    .twin-status {
-      margin-top: 1rem;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #a5d6a7;
-      text-align: center;
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriVision</title>
+<link rel="stylesheet" href="styles.css"/>
+<script src="script.js" defer></script>
 </head>
 <body>
+<header>
+<h1>AgriVision</h1>
+<nav>
+<ul>
+<li><a href="#home">Home</a></li>
+<li><a href="#about">About</a></li>
+<li><a href="#contact">Contact</a></li>
+</ul>
+</nav>
+</header>
 
-  <header class="header" role="banner">
-    <h1>AgriVision</h1>
-    <p>AI-Powered Crop Disease Detection & Digital Twin</p>
-  </header>
+<main>
+<section id="home">
+<h2>Welcome to AgriVision</h2>
+<p>This is the demo UI for the AgriVision project.</p>
+<button id="uploadBtn">Upload Image</button>
+<input type="file" id="fileInput" accept="image/*" style="display:none;"/>
+<div id="result"></div>
+</section>
 
-  <nav role="tablist" aria-label="Main navigation">
-    <button id="navUpload" class="active" role="tab" aria-selected="true" aria-controls="uploadPage">Upload Image</button>
-    <button id="navResults" role="tab" aria-selected="false" aria-controls="resultsPage">Results</button>
-    <button id="navTwin" role="tab" aria-selected="false" aria-controls="twinPage">Digital Twin</button>
-  </nav>
+<section id="about">
+<h2>About the Project</h2>
+<p>AgriVision uses AI-powered disease detection and digital twin visualization to help farmers monitor crop health effectively.</p>
+</section>
 
-  <main class="container">
-    <!-- Upload Page -->
-    <section id="uploadPage" class="page active" role="tabpanel" tabindex="0" aria-labelledby="navUpload">
-      <svg class="upload-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
-        <path d="M19 15v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-4M12 3v12m0 0l-3-3m3 3l3-3" stroke="#66bb6a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </svg>
-      <p class="instructions">Upload a leaf image or take a photo to detect crop disease.</p>
-      <label for="fileInput" class="upload-btn" aria-label="Upload or take photo">Upload Image or Take Photo</label>
-      <input id="fileInput" type="file" accept="image/*" capture="environment" />
-      <button id="startDetectionBtn" disabled>Detect Disease</button>
-    </section>
+<section id="contact">
+<h2>Contact Us</h2>
+<form>
+<label for="name">Name:</label>
+<input type="text" id="name" name="name" required/>
+<label for="email">Email:</label>
+<input type="email" id="email" name="email" required/>
+<label for="message">Message:</label>
+<textarea id="message" name="message" required></textarea>
+<button type="submit">Send</button>
+</form>
+</section>
+</main>
 
-    <!-- Results Page -->
-    <section id="resultsPage" class="page" role="tabpanel" tabindex="0" aria-labelledby="navResults" aria-hidden="true">
-      <div class="result-card" aria-live="polite" aria-atomic="true">
-        <h2 id="diseaseName">Disease Name</h2>
-        <div class="result-confidence" id="confidenceScore">Confidence: 0%</div>
-        <img id="annotatedImage" class="annotated-image" src="" alt="Annotated leaf showing detected disease" />
-        <div class="treatment" id="treatmentAdvice">
-          Treatment and prevention advice will appear here.
-        </div>
-      </div>
-    </section>
-
-    <!-- Digital Twin Page -->
-    <section id="twinPage" class="page" role="tabpanel" tabindex="0" aria-labelledby="navTwin" aria-hidden="true">
-      <canvas id="twinCanvas" aria-label="3D digital twin of plant"></canvas>
-      <div class="twin-status" id="twinStatus">Plant health status visualization will appear here.</div>
-    </section>
-  </main>
-
-  <script>
-    const navUpload = document.getElementById('navUpload');
-    const navResults = document.getElementById('navResults');
-    const navTwin = document.getElementById('navTwin');
-    const uploadPage = document.getElementById('uploadPage');
-    const resultsPage = document.getElementById('resultsPage');
-    const twinPage = document.getElementById('twinPage');
-    const fileInput = document.getElementById('fileInput');
-    const startDetectionBtn = document.getElementById('startDetectionBtn');
-
-    function activatePage(page) {
-      navUpload.classList.remove('active');
-      navResults.classList.remove('active');
-      navTwin.classList.remove('active');
-      uploadPage.classList.remove('active');
-      resultsPage.classList.remove('active');
-      twinPage.classList.remove('active');
-
-      navUpload.setAttribute('aria-selected', 'false');
-      navResults.setAttribute('aria-selected', 'false');
-      navTwin.setAttribute('aria-selected', 'false');
-
-      uploadPage.setAttribute('aria-hidden', 'true');
-      resultsPage.setAttribute('aria-hidden', 'true');
-      twinPage.setAttribute('aria-hidden', 'true');
-
-      if (page === 'upload') {
-        navUpload.classList.add('active');
-        navUpload.setAttribute('aria-selected', 'true');
-        uploadPage.classList.add('active');
-        uploadPage.removeAttribute('aria-hidden');
-      } else if (page === 'results') {
-        navResults.classList.add('active');
-        navResults.setAttribute('aria-selected', 'true');
-        resultsPage.classList.add('active');
-        resultsPage.removeAttribute('aria-hidden');
-      } else if (page === 'twin') {
-        navTwin.classList.add('active');
-        navTwin.setAttribute('aria-selected', 'true');
-        twinPage.classList.add('active');
-        twinPage.removeAttribute('aria-hidden');
-      }
-    }
-
-    navUpload.addEventListener('click', () => activatePage('upload'));
-    navResults.addEventListener('click', () => activatePage('results'));
-    navTwin.addEventListener('click', () => activatePage('twin'));
-
-    fileInput.addEventListener('change', () => {
-      startDetectionBtn.disabled = !fileInput.files.length;
-    });
-
-    startDetectionBtn.addEventListener('click', () => {
-      if (!fileInput.files.length) return;
-
-      activatePage('results');
-      const diseaseName = document.getElementById('diseaseName');
-      const confidenceScore = document.getElementById('confidenceScore');
-      const treatmentAdvice = document.getElementById('treatmentAdvice');
-      const annotatedImage = document.getElementById('annotatedImage');
-      const twinStatus = document.getElementById('twinStatus');
-
-      // Simulated example outputs – replace with real API call and detection results
-      diseaseName.textContent = 'Powdery Mildew';
-      confidenceScore.textContent = 'Confidence: 94%';
-      treatmentAdvice.textContent = `- Remove infected leaves.\n- Apply sulfur-based fungicides.\n- Improve air circulation.\n- Avoid overhead watering to keep leaves dry.`;
-      annotatedImage.src = URL.createObjectURL(fileInput.files[0]);
-      annotatedImage.alt = 'Annotated leaf with disease bounding boxes';
-
-      twinStatus.textContent = 'Plant health: Powdery Mildew detected (red-highlighted leaves)';
-      activatePage('twin');
-    });
-
-    // Placeholder for Three.js or other 3D digital twin visualization initialization on twinCanvas can be added here
-  </script>
+<footer>
+<p>© 2025 AgriVision. All rights reserved.</p>
+</footer>
 </body>
 </html>
-
